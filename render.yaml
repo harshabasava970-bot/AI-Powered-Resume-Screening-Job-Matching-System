@@ -1,0 +1,33 @@
+# ============================================================
+# Render Blueprint — defines both the web service and MySQL DB
+# Render reads this file to auto-configure your deployment
+# Docs: https://render.com/docs/blueprint-spec
+# ============================================================
+
+services:
+  - type: web
+    name: ai-resume-screening
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JPA_DDL_AUTO
+        value: update
+      - key: FILE_UPLOAD_DIR
+        value: /app/uploads
+      - key: MAX_FILE_SIZE
+        value: 10MB
+      - key: MAX_REQUEST_SIZE
+        value: 10MB
+      # These must be set manually in Render dashboard (secrets):
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APP_SECRET
+        sync: false
