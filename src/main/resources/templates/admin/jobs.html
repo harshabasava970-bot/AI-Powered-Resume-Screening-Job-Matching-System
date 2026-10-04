@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Admin - All Jobs')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header"><h1 class="page-title">All Job Postings</h1><p class="page-subtitle" th:text="${#lists.size(jobs)} + ' total jobs'">Jobs</p></div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Title</th><th>Company</th><th>Posted By</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr th:each="j : ${jobs}">
+              <td style="font-weight:500" th:text="${j.title}">Title</td>
+              <td th:text="${j.companyName}">Co</td>
+              <td class="text-sm" th:text="${j.recruiter.user.fullName}">Recruiter</td>
+              <td><span class="badge" th:classappend="${j.status.name() == 'ACTIVE' ? 'badge-success' : (j.status.name() == 'SUSPENDED' ? 'badge-danger' : 'badge-warning')}" th:text="${j.status}">s</span></td>
+              <td class="text-sm text-muted" th:text="${#temporals.format(j.postedAt,'MMM d, yyyy')}">date</td>
+              <td>
+                <div style="display:flex;gap:.4rem">
+                  <a th:href="@{/jobs/{id}(id=${j.id})}" class="btn btn-outline btn-sm">View</a>
+                  <form th:action="@{/admin/jobs/{id}/suspend(id=${j.id})}" method="post" style="margin:0" th:if="${j.status.name() == 'ACTIVE'}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-warning btn-sm">Suspend</button>
+                  </form>
+                  <form th:action="@{/admin/jobs/{id}/delete(id=${j.id})}" method="post" style="margin:0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger btn-sm" data-confirm="Permanently delete this job?">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

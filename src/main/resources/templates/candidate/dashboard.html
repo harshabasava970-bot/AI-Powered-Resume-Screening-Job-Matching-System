@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Candidate Dashboard')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div class="page-header">
+        <h1 class="page-title">Welcome back, <span th:text="${user.firstName}">Candidate</span>! 👋</h1>
+        <p class="page-subtitle">Here's an overview of your job matching activity</p>
+      </div>
+      <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary">📤 Upload Resume</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="margin-bottom:2rem">
+      <div class="stat-card stat-primary">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" th:text="${totalAnalyses}">0</div>
+        <div class="stat-label">Total Analyses</div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-value" th:text="${avgScore} + '%'">0%</div>
+        <div class="stat-label">Average Match Score</div>
+      </div>
+      <div class="stat-card stat-info">
+        <div class="stat-icon">📄</div>
+        <div class="stat-value" th:text="${#lists.size(resumes)}">0</div>
+        <div class="stat-label">Resumes Uploaded</div>
+      </div>
+      <div class="stat-card stat-warning">
+        <div class="stat-icon">💡</div>
+        <div class="stat-value" th:text="${#lists.size(recommendations)}">0</div>
+        <div class="stat-label">Recommendations</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem">
+      <!-- Left Column -->
+      <div>
+        <!-- Best Match -->
+        <div th:if="${bestMatch}" class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+            <span class="card-title">🏆 Best Match</span>
+            <a th:href="@{/candidate/analysis/{id}(id=${bestMatch.id})}" class="btn btn-outline btn-sm">View Details</a>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:1.1rem;font-weight:600" th:text="${bestMatch.jobTitle}">Job Title</div>
+                <div class="text-muted text-sm" th:text="${bestMatch.companyName}">Company</div>
+              </div>
+              <div th:with="s=${bestMatch.matchScore}"
+                   th:class="${s >= 70 ? 'score-high' : (s >= 40 ? 'score-medium' : 'score-low')}"
+                   style="font-size:2.5rem;font-weight:800" th:text="${bestMatch.matchScore} + '%'">0%</div>
+            </div>
+            <div class="mt-2">
+              <div class="skill-tags">
+                <span th:each="skill : ${bestMatch.matchedSkills}" class="skill-tag skill-tag-matched" th:text="${skill}"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Analyses -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+            <span class="card-title">📋 Recent Analyses</span>
+            <a th:href="@{/candidate/history}" class="btn btn-outline btn-sm">View All</a>
+          </div>
+          <div class="card-body" th:if="${#lists.isEmpty(recentAnalyses)}">
+            <div class="empty-state">
+              <div class="empty-state-icon">🔍</div>
+              <div class="empty-state-title">No analyses yet</div>
+              <div class="empty-state-text">Upload a resume and analyze it against a job to get started.</div>
+              <a th:href="@{/candidate/analyze}" class="btn btn-primary">Analyze Now</a>
+            </div>
+          </div>
+          <div class="table-wrapper" th:unless="${#lists.isEmpty(recentAnalyses)}">
+            <table>
+              <thead><tr><th>Job</th><th>Company</th><th>Score</th><th>Date</th><th></th></tr></thead>
+              <tbody>
+                <tr th:each="a : ${recentAnalyses}">
+                  <td th:text="${a.jobTitle}">Job</td>
+                  <td th:text="${a.companyName}">Co</td>
+                  <td>
+                    <span th:with="s=${a.matchScore}"
+                          th:class="${s >= 70 ? 'badge badge-success' : (s >= 40 ? 'badge badge-warning' : 'badge badge-danger')}"
+                          th:text="${a.matchScore} + '%'">0%</span>
+                  </td>
+                  <td class="text-sm text-muted" th:text="${#temporals.format(a.analyzedAt,'MMM d, yyyy')}">Date</td>
+                  <td><a th:href="@{/candidate/analysis/{id}(id=${a.id})}" class="btn btn-outline btn-sm">View</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Recommendations -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🚀 Top Recommendations</span>
+            <a th:href="@{/candidate/recommendations}" class="btn btn-outline btn-sm">See All</a>
+          </div>
+          <div class="card-body" th:if="${#lists.isEmpty(recommendations)}">
+            <p class="text-muted text-sm">Upload a resume to get job recommendations.</p>
+          </div>
+          <div th:unless="${#lists.isEmpty(recommendations)}">
+            <div th:each="rec : ${recommendations}" style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-100)">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-weight:600" th:text="${rec.jobTitle}">Title</div>
+                  <div class="text-muted text-sm" th:text="${rec.companyName}">Co</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.75rem">
+                  <span th:with="s=${rec.matchScore}"
+                        th:class="${s >= 70 ? 'badge badge-success' : (s >= 40 ? 'badge badge-warning' : 'badge badge-danger')}"
+                        th:text="${rec.matchScore} + '%'">0%</span>
+                  <a th:href="@{/candidate/analysis/{id}(id=${rec.analysisId})}" class="btn btn-outline-primary btn-sm">View</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div>
+        <!-- Missing Skills -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><span class="card-title">📚 Most Missing Skills</span></div>
+          <div class="card-body" th:if="${#lists.isEmpty(topMissingSkills)}">
+            <p class="text-muted text-sm">Complete some analyses to see which skills you need to develop.</p>
+          </div>
+          <div th:unless="${#lists.isEmpty(topMissingSkills)}">
+            <div th:each="entry : ${topMissingSkills}" style="padding:.75rem 1.25rem;border-bottom:1px solid var(--gray-100)">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="skill-tag skill-tag-missing" th:text="${entry.key}">Skill</span>
+                <span class="text-xs text-muted" th:text="'Missing in ' + ${entry.value} + ' job(s)'">count</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resume status -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📄 My Resumes</span></div>
+          <div class="card-body" th:if="${#lists.isEmpty(resumes)}">
+            <div class="empty-state" style="padding:1.5rem 1rem">
+              <div class="empty-state-icon">📂</div>
+              <div class="empty-state-title">No resumes yet</div>
+              <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary btn-sm">Upload Now</a>
+            </div>
+          </div>
+          <div th:unless="${#lists.isEmpty(resumes)}">
+            <div th:each="r : ${resumes}" style="padding:.875rem 1.25rem;border-bottom:1px solid var(--gray-100)">
+              <div style="font-weight:500;font-size:.875rem" th:text="${r.originalFileName}">file.pdf</div>
+              <div class="text-xs text-muted mt-1">
+                <span th:text="${#lists.size(r.skills)} + ' skills found'">0 skills</span> ·
+                <span th:text="${#temporals.format(r.uploadedAt,'MMM d, yyyy')}">date</span>
+              </div>
+              <div style="margin-top:.5rem;display:flex;gap:.5rem">
+                <a th:href="@{/candidate/resumes/{id}(id=${r.id})}" class="btn btn-outline btn-sm">View</a>
+                <a th:href="@{/candidate/recommendations/{id}(id=${r.id})}" class="btn btn-outline-primary btn-sm">Match Jobs</a>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary btn-sm btn-block">Upload New Resume</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

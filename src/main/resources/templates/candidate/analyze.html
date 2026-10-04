@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Analyze Resume')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container" style="max-width:720px">
+    <div class="page-header">
+      <h1 class="page-title">🎯 Analyze Resume Against Job</h1>
+      <p class="page-subtitle">Select your resume and a job posting to see your match score, matched skills, and missing skills.</p>
+    </div>
+
+    <div th:if="${#lists.isEmpty(resumes)}" class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">📄</div>
+          <div class="empty-state-title">No resume uploaded</div>
+          <div class="empty-state-text">You need to upload a resume first before running an analysis.</div>
+          <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary">Upload Resume</a>
+        </div>
+      </div>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(resumes)}" class="card">
+      <div class="card-header"><span class="card-title">Run Match Analysis</span></div>
+      <div class="card-body">
+        <form th:action="@{/candidate/analyze}" method="post" id="analyzeForm">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="form-group">
+            <label class="form-label">Select Resume <span class="required">*</span></label>
+            <select name="resumeId" class="form-control" required>
+              <option value="">-- Choose a resume --</option>
+              <option th:each="r : ${resumes}" th:value="${r.id}"
+                      th:text="${r.originalFileName} + ' (' + ${#lists.size(r.skills)} + ' skills)'"
+                      th:selected="${r.id == selectedResumeId}">Resume</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Select Job <span class="required">*</span></label>
+            <select name="jobId" class="form-control" required id="jobSelect">
+              <option value="">-- Choose a job --</option>
+              <option th:each="j : ${jobs}" th:value="${j.id}"
+                      th:text="${j.title} + ' @ ' + ${j.companyName}"
+                      th:selected="${j.id == preselectedJobId}">Job</option>
+            </select>
+          </div>
+
+          <!-- Preselected job info -->
+          <div th:if="${preselectedJob}" class="card" style="background:var(--primary-light);border-color:#bfdbfe;margin-bottom:1rem">
+            <div class="card-body" style="padding:1rem">
+              <div style="font-weight:600" th:text="${preselectedJob.title}">Job</div>
+              <div class="text-sm text-muted" th:text="${preselectedJob.companyName} + ' · ' + ${preselectedJob.location}">Co</div>
+              <div class="skill-tags mt-1">
+                <span th:each="s : ${preselectedJob.requiredSkills}" class="skill-tag" th:text="${s}">skill</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="analyzeBtn">
+            🔍 Run Analysis
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;padding:1.25rem;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius)">
+      <strong style="font-size:.875rem">How scoring works:</strong>
+      <div style="font-size:.8rem;color:var(--gray-500);margin-top:.5rem;display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+        <span>🔵 Required Skills Match → <strong>60%</strong> weight</span>
+        <span>🔵 Preferred Skills Match → <strong>20%</strong> weight</span>
+        <span>🔵 Experience Match → <strong>10%</strong> weight</span>
+        <span>🔵 Education Match → <strong>10%</strong> weight</span>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+<script>
+  document.getElementById('analyzeForm').addEventListener('submit', function() {
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('analyzeBtn').textContent = '⏳ Analyzing...';
+  });
+</script>
+</body>
+</html>

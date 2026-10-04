@@ -1,0 +1,30 @@
+# Maven build output
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Environment files with secrets
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Uploaded files (not part of image)
+uploads/
+
+# Test outputs
+test-uploads/

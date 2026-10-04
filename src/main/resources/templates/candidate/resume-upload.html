@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Upload Resume')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+
+<main class="main-content">
+  <div class="container" style="max-width:680px">
+    <div class="page-header">
+      <a th:href="@{/candidate/resumes}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← Back to Resumes</a>
+      <h1 class="page-title">Upload Resume</h1>
+      <p class="page-subtitle">Upload your PDF or DOCX resume. We'll extract your skills automatically.</p>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger">
+      <span class="alert-icon">✕</span><span th:text="${error}"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <form th:action="@{/candidate/resumes/upload}" method="post" enctype="multipart/form-data" id="uploadForm">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <!-- Drop zone -->
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-zone-icon">📁</div>
+            <div class="upload-zone-text">Click to browse or drag &amp; drop your resume here</div>
+            <div class="upload-zone-hint">Accepted formats: PDF, DOCX · Maximum size: 10 MB</div>
+          </div>
+          <input type="file" id="resumeFile" name="file" accept=".pdf,.docx" style="display:none"/>
+
+          <!-- File info (shown after selection) -->
+          <div id="fileInfo" style="display:none;margin-top:1rem" class="alert alert-success">
+            <span class="alert-icon">✓</span>
+            <span id="fileName">No file selected</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:1.5rem" id="uploadBtn">
+            📤 Upload &amp; Parse Resume
+          </button>
+        </form>
+
+        <div class="divider"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div style="background:var(--primary-light);border-radius:var(--radius);padding:1rem">
+            <div style="font-weight:600;margin-bottom:.5rem;color:var(--primary)">📋 What we extract</div>
+            <ul style="font-size:.875rem;color:var(--gray-600);list-style:disc;padding-left:1.25rem">
+              <li>Technical skills</li>
+              <li>Soft skills</li>
+              <li>Name &amp; contact info</li>
+              <li>Education details</li>
+              <li>Work experience</li>
+              <li>Projects</li>
+            </ul>
+          </div>
+          <div style="background:var(--success-light);border-radius:var(--radius);padding:1rem">
+            <div style="font-weight:600;margin-bottom:.5rem;color:var(--success)">✅ Tips for best results</div>
+            <ul style="font-size:.875rem;color:var(--gray-600);list-style:disc;padding-left:1.25rem">
+              <li>Use a standard resume format</li>
+              <li>List skills clearly in a skills section</li>
+              <li>Avoid scanned image PDFs</li>
+              <li>Use common skill names (e.g., "Spring Boot", "MySQL")</li>
+              <li>Include education &amp; experience sections</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+<script>
+  document.getElementById('uploadForm').addEventListener('submit', function() {
+    document.getElementById('uploadBtn').disabled = true;
+    document.getElementById('uploadBtn').textContent = '⏳ Uploading & Parsing...';
+  });
+</script>
+</body>
+</html>

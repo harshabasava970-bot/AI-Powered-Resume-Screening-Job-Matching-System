@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Analysis Result')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div>
+        <a th:href="@{/candidate/history}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← Analysis History</a>
+        <h1 class="page-title">Match Analysis Result</h1>
+        <p class="page-subtitle" th:text="'Analyzed on ' + ${#temporals.format(analysis.analyzedAt,'MMMM d, yyyy HH:mm')}">date</p>
+      </div>
+      <a th:href="@{/candidate/analyze}" class="btn btn-primary">🔍 New Analysis</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:1.5rem;align-items:start">
+      <!-- Score Card -->
+      <div>
+        <div class="card" style="margin-bottom:1.5rem;text-align:center">
+          <div class="card-header"><span class="card-title">Overall Match Score</span></div>
+          <div class="card-body">
+            <!-- SVG Score Ring -->
+            <div class="score-ring-container">
+              <div class="score-ring" th:attr="data-score=${analysis.matchScore}">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+                  <circle class="score-ring-progress" cx="70" cy="70" r="58" fill="none"
+                          stroke="#2563eb" stroke-width="12" stroke-linecap="round"
+                          style="stroke-dasharray:364.4;stroke-dashoffset:364.4"/>
+                </svg>
+                <div class="score-ring-text">
+                  <div class="score-ring-value" th:text="${#numbers.formatDecimal(analysis.matchScore,1,1)} + '%'">0%</div>
+                  <div class="score-ring-label">Match</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Breakdown Bars -->
+            <div style="text-align:left;margin-top:1rem">
+              <div class="progress-wrap">
+                <div class="progress-header">
+                  <span class="progress-label">Required Skills</span>
+                  <span class="progress-value" th:text="${#numbers.formatDecimal(analysis.requiredSkillScore,1,1)} + '%'">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" th:classappend="${analysis.requiredSkillScore >= 70 ? 'success' : (analysis.requiredSkillScore >= 40 ? '' : 'danger')}"
+                       th:attr="data-width=${analysis.requiredSkillScore}" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-header">
+                  <span class="progress-label">Preferred Skills</span>
+                  <span class="progress-value" th:text="${#numbers.formatDecimal(analysis.preferredSkillScore,1,1)} + '%'">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" th:attr="data-width=${analysis.preferredSkillScore}" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-header">
+                  <span class="progress-label">Experience</span>
+                  <span class="progress-value" th:text="${#numbers.formatDecimal(analysis.experienceScore,1,1)} + '%'">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" th:attr="data-width=${analysis.experienceScore}" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Info -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📋 Job Details</span></div>
+          <div class="card-body">
+            <div style="font-weight:600;font-size:1rem;margin-bottom:.25rem" th:text="${job.title}">Title</div>
+            <div class="text-muted text-sm" th:text="${job.companyName}">Company</div>
+            <div class="text-muted text-sm mt-1" th:if="${job.location}" th:text="'📍 ' + ${job.location}">Location</div>
+            <div class="mt-2" th:if="${job.employmentType}">
+              <span class="badge badge-info" th:text="${job.employmentType}">Type</span>
+            </div>
+            <div class="divider"></div>
+            <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-outline btn-block btn-sm">View Job Posting</a>
+            <a th:href="@{/candidate/analyze/job/{id}(id=${job.id})}" class="btn btn-outline-primary btn-block btn-sm" style="margin-top:.5rem">Re-Analyze</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills Detail -->
+      <div>
+        <!-- Score Explanation -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><span class="card-title">📊 Score Explanation</span></div>
+          <div class="card-body">
+            <p style="font-size:.875rem;color:var(--gray-600);line-height:1.7" th:text="${analysis.scoreBreakdown}">breakdown</p>
+            <div class="divider"></div>
+            <div style="font-size:.8rem;color:var(--gray-500);background:var(--gray-50);padding:.875rem;border-radius:var(--radius)">
+              <strong>Formula:</strong> Score = (Required×60% + Preferred×20% + Experience×10% + Education×10%) × 100
+            </div>
+          </div>
+        </div>
+
+        <!-- Matched Skills -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+            <span class="card-title">✅ Matched Skills</span>
+            <span class="badge badge-success" th:text="${#lists.size(analysis.matchedSkills)} + ' matched'">0</span>
+          </div>
+          <div class="card-body">
+            <div th:if="${#lists.isEmpty(analysis.matchedSkills)}" class="text-muted text-sm">No skills matched. Consider adding relevant skills to your resume.</div>
+            <div th:unless="${#lists.isEmpty(analysis.matchedSkills)}" class="skill-tags">
+              <span th:each="skill : ${analysis.matchedSkills}" class="skill-tag skill-tag-matched" th:text="${skill}">Skill</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Missing Required Skills -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+            <span class="card-title">❌ Missing Required Skills</span>
+            <span class="badge badge-danger" th:text="${#lists.size(analysis.missingSkills)} + ' missing'">0</span>
+          </div>
+          <div class="card-body">
+            <div th:if="${#lists.isEmpty(analysis.missingSkills)}" class="alert alert-success">
+              <span class="alert-icon">🎉</span> You have all required skills for this job!
+            </div>
+            <div th:unless="${#lists.isEmpty(analysis.missingSkills)}">
+              <p class="text-sm text-muted" style="margin-bottom:.75rem">Learn these skills to improve your match score:</p>
+              <div class="skill-tags">
+                <span th:each="skill : ${analysis.missingSkills}" class="skill-tag skill-tag-missing" th:text="${skill}">Skill</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Missing Preferred Skills -->
+        <div class="card" th:unless="${#lists.isEmpty(analysis.missingPreferredSkills)}">
+          <div class="card-header">
+            <span class="card-title">💡 Missing Preferred Skills</span>
+            <span class="badge badge-warning" th:text="${#lists.size(analysis.missingPreferredSkills)} + ' missing'">0</span>
+          </div>
+          <div class="card-body">
+            <p class="text-sm text-muted" style="margin-bottom:.75rem">These are nice-to-have skills for this role:</p>
+            <div class="skill-tags">
+              <span th:each="skill : ${analysis.missingPreferredSkills}" class="skill-tag skill-tag-preferred" th:text="${skill}">Skill</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

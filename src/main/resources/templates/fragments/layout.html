@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- ============================================================
+     NAVBAR FRAGMENT
+     Usage: <nav th:replace="~{fragments/layout :: navbar}"></nav>
+     ============================================================ -->
+<nav th:fragment="navbar" class="navbar">
+  <div class="container navbar-inner">
+    <a th:href="@{/}" class="navbar-brand">
+      🤖 ResumeAI <span>Job Matching System</span>
+    </a>
+
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="navbar-nav" id="navMenu">
+      <!-- Guest links -->
+      <div sec:authorize="!isAuthenticated()">
+        <a th:href="@{/jobs}" class="nav-link">Browse Jobs</a>
+        <a th:href="@{/auth/login}" class="nav-link">Login</a>
+        <a th:href="@{/auth/register}" class="btn btn-primary btn-sm">Register</a>
+      </div>
+
+      <!-- Candidate links -->
+      <div sec:authorize="hasRole('CANDIDATE')" style="display:contents">
+        <a th:href="@{/candidate/dashboard}" class="nav-link">Dashboard</a>
+        <a th:href="@{/candidate/resumes}" class="nav-link">My Resumes</a>
+        <a th:href="@{/jobs}" class="nav-link">Jobs</a>
+        <a th:href="@{/candidate/analyze}" class="nav-link">Analyze</a>
+        <a th:href="@{/candidate/recommendations}" class="nav-link">Recommendations</a>
+        <a th:href="@{/candidate/history}" class="nav-link">History</a>
+      </div>
+
+      <!-- Recruiter links -->
+      <div sec:authorize="hasRole('RECRUITER')" style="display:contents">
+        <a th:href="@{/recruiter/dashboard}" class="nav-link">Dashboard</a>
+        <a th:href="@{/recruiter/jobs}" class="nav-link">My Jobs</a>
+        <a th:href="@{/recruiter/jobs/create}" class="nav-link">Post Job</a>
+      </div>
+
+      <!-- Admin links -->
+      <div sec:authorize="hasRole('ADMIN')" style="display:contents">
+        <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+        <a th:href="@{/admin/users}" class="nav-link">Users</a>
+        <a th:href="@{/admin/jobs}" class="nav-link">Jobs</a>
+      </div>
+
+      <!-- Authenticated user menu -->
+      <div sec:authorize="isAuthenticated()" class="navbar-user" style="margin-left:.5rem">
+        <div class="user-avatar">
+          <span sec:authentication="name" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</span>
+        </div>
+        <span sec:authentication="name" class="text-sm" style="color:var(--gray-600)"></span>
+        <form th:action="@{/auth/logout}" method="post" style="margin:0">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button type="submit" class="btn btn-outline btn-sm">Logout</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     FLASH MESSAGES FRAGMENT
+     ============================================================ -->
+<div th:fragment="flashMessages" class="container" style="margin-top:1rem">
+  <div th:if="${successMessage}" class="alert alert-success" data-auto-dismiss>
+    <span class="alert-icon">✓</span>
+    <span th:text="${successMessage}"></span>
+  </div>
+  <div th:if="${success}" class="alert alert-success" data-auto-dismiss>
+    <span class="alert-icon">✓</span>
+    <span th:text="${success}"></span>
+  </div>
+  <div th:if="${error}" class="alert alert-danger">
+    <span class="alert-icon">✕</span>
+    <span th:text="${error}"></span>
+  </div>
+  <div th:if="${warning}" class="alert alert-warning">
+    <span class="alert-icon">⚠</span>
+    <span th:text="${warning}"></span>
+  </div>
+  <div th:if="${info}" class="alert alert-info">
+    <span class="alert-icon">ℹ</span>
+    <span th:text="${info}"></span>
+  </div>
+</div>
+
+<!-- ============================================================
+     FOOTER FRAGMENT
+     ============================================================ -->
+<footer th:fragment="footer" class="footer">
+  <div class="container footer-inner">
+    <span>© 2024 ResumeAI — AI-Powered Resume Screening &amp; Job Matching System</span>
+    <span>Built with Java · Spring Boot · MySQL · Thymeleaf</span>
+  </div>
+</footer>
+
+<!-- ============================================================
+     HEAD FRAGMENT (CSS + meta)
+     ============================================================ -->
+<th:block th:fragment="head(title)">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${title} + ' | ResumeAI'">ResumeAI</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</th:block>
+
+</html>

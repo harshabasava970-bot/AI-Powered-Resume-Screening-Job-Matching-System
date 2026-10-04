@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+  <th:block th:replace="~{fragments/layout :: head('Home')}"></th:block>
+</head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1 class="hero-title">AI-Powered Resume Screening<br>&amp; Job Matching</h1>
+    <p class="hero-subtitle">Upload your resume, analyze it against job descriptions, and discover your best matches with transparent skill-based scoring.</p>
+    <div class="hero-actions">
+      <div sec:authorize="!isAuthenticated()">
+        <a th:href="@{/auth/register}" class="btn-hero-primary">Get Started Free</a>
+        <a th:href="@{/auth/login}" class="btn-hero-outline" style="margin-left:1rem">Login</a>
+      </div>
+      <div sec:authorize="hasRole('CANDIDATE')">
+        <a th:href="@{/candidate/dashboard}" class="btn-hero-primary">Go to Dashboard</a>
+        <a th:href="@{/jobs}" class="btn-hero-outline" style="margin-left:1rem">Browse Jobs</a>
+      </div>
+      <div sec:authorize="hasRole('RECRUITER')">
+        <a th:href="@{/recruiter/dashboard}" class="btn-hero-primary">Recruiter Dashboard</a>
+      </div>
+    </div>
+
+    <div class="hero-features">
+      <div class="hero-feature">
+        <div class="hero-feature-icon">📄</div>
+        <div class="hero-feature-title">Smart Resume Parsing</div>
+        <div class="hero-feature-desc">Automatically extracts skills, education, and experience from PDF &amp; DOCX resumes.</div>
+      </div>
+      <div class="hero-feature">
+        <div class="hero-feature-icon">🎯</div>
+        <div class="hero-feature-title">Transparent Matching</div>
+        <div class="hero-feature-desc">Explainable scoring — see exactly why you scored a particular percentage.</div>
+      </div>
+      <div class="hero-feature">
+        <div class="hero-feature-icon">💡</div>
+        <div class="hero-feature-title">Skill Gap Analysis</div>
+        <div class="hero-feature-desc">Identify missing skills and know exactly what to learn next for your target role.</div>
+      </div>
+      <div class="hero-feature">
+        <div class="hero-feature-icon">🚀</div>
+        <div class="hero-feature-title">Job Recommendations</div>
+        <div class="hero-feature-desc">Get ranked job recommendations based on your resume's skill profile.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section style="background:#fff; padding:4rem 0;">
+  <div class="container">
+    <h2 style="text-align:center;font-size:1.75rem;font-weight:700;margin-bottom:3rem;color:var(--gray-800)">How It Works</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;text-align:center">
+      <div>
+        <div style="width:56px;height:56px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem">1️⃣</div>
+        <h3 style="font-weight:600;margin-bottom:.5rem">Upload Resume</h3>
+        <p style="color:var(--gray-500);font-size:.875rem">Upload your PDF or DOCX resume. Our system extracts text and identifies your skills automatically.</p>
+      </div>
+      <div>
+        <div style="width:56px;height:56px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem">2️⃣</div>
+        <h3 style="font-weight:600;margin-bottom:.5rem">Browse Jobs</h3>
+        <p style="color:var(--gray-500);font-size:.875rem">Explore job postings from recruiters. Each job lists required and preferred skills.</p>
+      </div>
+      <div>
+        <div style="width:56px;height:56px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem">3️⃣</div>
+        <h3 style="font-weight:600;margin-bottom:.5rem">Analyze Match</h3>
+        <p style="color:var(--gray-500);font-size:.875rem">Run the matching engine. Get a transparent score with matched and missing skills explained.</p>
+      </div>
+      <div>
+        <div style="width:56px;height:56px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem">4️⃣</div>
+        <h3 style="font-weight:600;margin-bottom:.5rem">Get Recommended</h3>
+        <p style="color:var(--gray-500);font-size:.875rem">View ranked job recommendations based on your skills. Apply to the best-fit roles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

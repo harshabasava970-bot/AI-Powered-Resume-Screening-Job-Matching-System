@@ -1,0 +1,74 @@
+version: '3.8'
+
+# ============================================================
+# Docker Compose for local development
+# Usage: docker-compose up -d
+# ============================================================
+
+services:
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: resume_screening_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-resume_screening_db}
+      MYSQL_USER: ${MYSQL_USER:-appuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app_network
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resume_screening_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-resume_screening_db}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${MYSQL_USER:-appuser}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+      SERVER_PORT: 8080
+      APP_SECRET: ${APP_SECRET:-change-this-in-production-min32chars-secure}
+      JPA_DDL_AUTO: update
+      FILE_UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE: 10MB
+      MAX_REQUEST_SIZE: 10MB
+    ports:
+      - "8080:8080"
+    volumes:
+      - resume_uploads:/app/uploads
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mysql_data:
+    driver: local
+  resume_uploads:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge

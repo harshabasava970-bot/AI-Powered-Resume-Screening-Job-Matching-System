@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Analysis History')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div class="page-header">
+        <h1 class="page-title">Analysis History</h1>
+        <p class="page-subtitle" th:text="${total} + ' total analyses'">0 analyses</p>
+      </div>
+      <a th:href="@{/candidate/analyze}" class="btn btn-primary">🔍 New Analysis</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(analyses)}" class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-title">No analyses yet</div>
+          <div class="empty-state-text">Run your first resume analysis to see results here.</div>
+          <a th:href="@{/candidate/analyze}" class="btn btn-primary">Analyze Now</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" th:unless="${#lists.isEmpty(analyses)}">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Job Title</th><th>Company</th><th>Match Score</th>
+              <th>Required Skills</th><th>Missing Skills</th><th>Date</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="a : ${analyses}">
+              <td style="font-weight:500" th:text="${a.jobTitle}">Job</td>
+              <td th:text="${a.companyName}">Co</td>
+              <td>
+                <span th:with="s=${a.matchScore}"
+                      th:class="${s >= 70 ? 'badge badge-success' : (s >= 40 ? 'badge badge-warning' : 'badge badge-danger')}"
+                      th:text="${#numbers.formatDecimal(a.matchScore,1,1)} + '%'">0%</span>
+              </td>
+              <td>
+                <div class="skill-tags">
+                  <span th:each="sk,i : ${a.matchedSkills}" th:if="${i.index < 3}"
+                        class="skill-tag skill-tag-matched text-xs" th:text="${sk}">s</span>
+                  <span th:if="${#lists.size(a.matchedSkills) > 3}" class="skill-tag"
+                        th:text="'+' + (${#lists.size(a.matchedSkills)} - 3)">+N</span>
+                </div>
+              </td>
+              <td>
+                <div class="skill-tags">
+                  <span th:each="sk,i : ${a.missingSkills}" th:if="${i.index < 3}"
+                        class="skill-tag skill-tag-missing text-xs" th:text="${sk}">s</span>
+                  <span th:if="${#lists.size(a.missingSkills) > 3}" class="skill-tag"
+                        th:text="'+' + (${#lists.size(a.missingSkills)} - 3)">+N</span>
+                </div>
+              </td>
+              <td class="text-sm text-muted" th:text="${#temporals.format(a.analyzedAt,'MMM d, yyyy')}">date</td>
+              <td><a th:href="@{/candidate/analysis/{id}(id=${a.id})}" class="btn btn-outline btn-sm">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

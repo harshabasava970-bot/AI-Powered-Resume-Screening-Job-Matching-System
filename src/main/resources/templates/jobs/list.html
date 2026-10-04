@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Browse Jobs')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div class="page-header">
+        <h1 class="page-title">Browse Jobs</h1>
+        <p class="page-subtitle" th:text="${totalJobs} + ' active job postings'">Jobs</p>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-body" style="padding:1rem">
+        <form th:action="@{/jobs}" method="get" style="display:flex;gap:.75rem">
+          <input type="text" name="search" class="form-control" placeholder="Search by title, company, or skills..."
+                 th:value="${searchQuery}" style="flex:1"/>
+          <button type="submit" class="btn btn-primary">🔍 Search</button>
+          <a th:if="${searchQuery}" th:href="@{/jobs}" class="btn btn-outline">Clear</a>
+        </form>
+      </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(jobs)}" class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-title" th:text="${searchQuery != null ? 'No jobs found for: ' + searchQuery : 'No active jobs'}">No jobs</div>
+          <div class="empty-state-text">Try a different search term or check back later.</div>
+          <a th:href="@{/jobs}" class="btn btn-outline">View All Jobs</a>
+        </div>
+      </div>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(jobs)}" class="job-grid">
+      <div th:each="job : ${jobs}" class="job-card">
+        <div class="job-card-title" th:text="${job.title}">Title</div>
+        <div class="job-card-company">
+          🏢 <span th:text="${job.companyName}">Co</span>
+          <span th:if="${job.location}"> · 📍 <span th:text="${job.location}">Loc</span></span>
+        </div>
+        <div class="job-card-meta">
+          <span th:if="${job.employmentType}" class="badge badge-info" th:text="${job.employmentType}">type</span>
+          <span th:if="${job.experienceRequired}" class="badge badge-gray" th:text="${job.experienceRequired}">exp</span>
+          <span th:if="${job.salaryRange}" class="badge badge-success" th:text="${job.salaryRange}">salary</span>
+        </div>
+        <div th:unless="${#lists.isEmpty(job.requiredSkills)}" class="skill-tags" style="margin-bottom:.875rem">
+          <span th:each="sk,i : ${job.requiredSkills}" th:if="${i.index < 4}" class="skill-tag" th:text="${sk}">s</span>
+          <span th:if="${#lists.size(job.requiredSkills) > 4}" class="skill-tag" style="background:var(--gray-100);color:var(--gray-600)"
+                th:text="'+' + (${#lists.size(job.requiredSkills)} - 4) + ' more'">+N</span>
+        </div>
+        <div style="font-size:.8rem;color:var(--gray-400);margin-bottom:.875rem"
+             th:text="'Posted ' + ${#temporals.format(job.postedAt,'MMM d, yyyy')}">date</div>
+        <div class="job-card-footer">
+          <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-outline btn-sm">View Details</a>
+          <a th:href="@{/candidate/analyze/job/{id}(id=${job.id})}" class="btn btn-primary btn-sm">Analyze Match →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

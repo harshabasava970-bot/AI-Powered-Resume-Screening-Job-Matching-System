@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Job Recommendations')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">🚀 Job Recommendations</h1>
+      <p class="page-subtitle" th:if="${resumeFileName}">Based on: <strong th:text="${resumeFileName}">resume.pdf</strong></p>
+    </div>
+
+    <div th:if="${noResume}" class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">📄</div>
+          <div class="empty-state-title">Upload a resume first</div>
+          <div class="empty-state-text">We need your resume to generate personalized job recommendations.</div>
+          <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary">Upload Resume</a>
+        </div>
+      </div>
+    </div>
+
+    <div th:unless="${noResume}">
+      <div th:if="${#lists.isEmpty(recommendations)}" class="card">
+        <div class="card-body">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-title">No matching jobs found</div>
+            <div class="empty-state-text">No active jobs match your resume with a score above 20%. Try improving your skill coverage or check back when new jobs are posted.</div>
+            <a th:href="@{/jobs}" class="btn btn-outline-primary">Browse All Jobs</a>
+          </div>
+        </div>
+      </div>
+
+      <div th:unless="${#lists.isEmpty(recommendations)}">
+        <p class="text-sm text-muted" style="margin-bottom:1.25rem"
+           th:text="${#lists.size(recommendations)} + ' jobs found matching your profile, sorted by match score'">N jobs</p>
+
+        <div class="job-grid">
+          <div th:each="rec : ${recommendations}" class="job-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem">
+              <div>
+                <div class="job-card-title" th:text="${rec.jobTitle}">Title</div>
+                <div class="job-card-company" th:text="${rec.companyName}">Company</div>
+              </div>
+              <div th:with="s=${rec.matchScore}"
+                   th:class="'job-score ' + (${s >= 70} ? 'score-high' : (${s >= 40} ? 'score-medium' : 'score-low'))"
+                   th:text="${rec.matchScore} + '%'">0%</div>
+            </div>
+
+            <div class="job-card-meta">
+              <span th:if="${rec.location}" class="badge badge-gray" th:text="'📍 ' + ${rec.location}">loc</span>
+              <span th:if="${rec.employmentType}" class="badge badge-info" th:text="${rec.employmentType}">type</span>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(rec.matchedSkills)}" style="margin-bottom:.5rem">
+              <div class="text-xs text-muted" style="margin-bottom:.3rem">✅ Matched:</div>
+              <div class="skill-tags">
+                <span th:each="sk,i : ${rec.matchedSkills}" th:if="${i.index < 4}"
+                      class="skill-tag skill-tag-matched" th:text="${sk}">s</span>
+                <span th:if="${#lists.size(rec.matchedSkills) > 4}" class="skill-tag"
+                      th:text="'+' + (${#lists.size(rec.matchedSkills)} - 4)">+N</span>
+              </div>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(rec.missingSkills)}" style="margin-bottom:.75rem">
+              <div class="text-xs text-muted" style="margin-bottom:.3rem">❌ Missing:</div>
+              <div class="skill-tags">
+                <span th:each="sk,i : ${rec.missingSkills}" th:if="${i.index < 3}"
+                      class="skill-tag skill-tag-missing" th:text="${sk}">s</span>
+                <span th:if="${#lists.size(rec.missingSkills) > 3}" class="skill-tag"
+                      th:text="'+' + (${#lists.size(rec.missingSkills)} - 3)">+N</span>
+              </div>
+            </div>
+
+            <div class="job-card-footer">
+              <a th:href="@{/jobs/{id}(id=${rec.jobId})}" class="btn btn-outline btn-sm">View Job</a>
+              <a th:href="@{/candidate/analysis/{id}(id=${rec.analysisId})}" class="btn btn-primary btn-sm">Full Analysis →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

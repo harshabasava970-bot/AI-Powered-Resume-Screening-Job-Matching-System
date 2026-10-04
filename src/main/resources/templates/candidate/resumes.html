@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('My Resumes')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div class="page-header"><h1 class="page-title">My Resumes</h1><p class="page-subtitle">Manage and view your uploaded resumes</p></div>
+      <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary">📤 Upload New Resume</a>
+    </div>
+    <div th:if="${#lists.isEmpty(resumes)}" class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">📂</div>
+          <div class="empty-state-title">No resumes uploaded yet</div>
+          <div class="empty-state-text">Upload your resume to start matching with jobs and getting recommendations.</div>
+          <a th:href="@{/candidate/resumes/upload}" class="btn btn-primary">Upload Your First Resume</a>
+        </div>
+      </div>
+    </div>
+    <div th:unless="${#lists.isEmpty(resumes)}" class="job-grid">
+      <div th:each="r : ${resumes}" class="job-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="job-card-title" th:text="${r.originalFileName}">filename.pdf</div>
+            <div class="job-card-company">Uploaded: <span th:text="${#temporals.format(r.uploadedAt,'MMM d, yyyy')}">date</span></div>
+          </div>
+          <span class="badge" th:classappend="${r.fileType == 'PDF' ? 'badge-danger' : 'badge-info'}" th:text="${r.fileType}">PDF</span>
+        </div>
+        <div class="job-card-meta">
+          <span class="badge badge-primary" th:text="${#lists.size(r.skills)} + ' skills'">0 skills</span>
+          <span th:if="${r.parsed}" class="badge badge-success">✓ Parsed</span>
+          <span th:unless="${r.parsed}" class="badge badge-warning">Pending</span>
+        </div>
+        <div class="skill-tags" style="margin-bottom:.875rem">
+          <span th:each="skill,iter : ${r.skills}" th:if="${iter.index < 5}" class="skill-tag" th:text="${skill}">Skill</span>
+          <span th:if="${#lists.size(r.skills) > 5}" class="skill-tag" style="background:var(--gray-100);color:var(--gray-600)" th:text="'+' + (${#lists.size(r.skills)} - 5) + ' more'">+N</span>
+        </div>
+        <div class="job-card-footer">
+          <a th:href="@{/candidate/resumes/{id}(id=${r.id})}" class="btn btn-outline btn-sm">View Details</a>
+          <a th:href="@{/candidate/recommendations/{id}(id=${r.id})}" class="btn btn-primary btn-sm">Match Jobs →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

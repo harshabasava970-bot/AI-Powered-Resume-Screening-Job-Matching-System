@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Admin Dashboard')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header"><h1 class="page-title">⚙️ Admin Dashboard</h1><p class="page-subtitle">System overview and management</p></div>
+    <div class="stats-grid" style="margin-bottom:2rem">
+      <div class="stat-card stat-primary"><div class="stat-icon">👤</div><div class="stat-value" th:text="${totalUsers}">0</div><div class="stat-label">Total Users</div></div>
+      <div class="stat-card stat-info"><div class="stat-icon">🎓</div><div class="stat-value" th:text="${totalCandidates}">0</div><div class="stat-label">Candidates</div></div>
+      <div class="stat-card stat-warning"><div class="stat-icon">💼</div><div class="stat-value" th:text="${totalRecruiters}">0</div><div class="stat-label">Recruiters</div></div>
+      <div class="stat-card stat-success"><div class="stat-icon">✅</div><div class="stat-value" th:text="${activeUsers}">0</div><div class="stat-label">Active Users</div></div>
+      <div class="stat-card stat-primary"><div class="stat-icon">📋</div><div class="stat-value" th:text="${totalJobs}">0</div><div class="stat-label">Total Jobs</div></div>
+      <div class="stat-card stat-success"><div class="stat-icon">🔍</div><div class="stat-value" th:text="${totalAnalyses}">0</div><div class="stat-label">Analyses Run</div></div>
+      <div class="stat-card stat-info"><div class="stat-icon">📄</div><div class="stat-value" th:text="${totalResumes}">0</div><div class="stat-label">Resumes</div></div>
+      <div class="stat-card stat-warning"><div class="stat-icon">🟢</div><div class="stat-value" th:text="${activeJobs}">0</div><div class="stat-label">Active Jobs</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Registrations</span><a th:href="@{/admin/users}" class="btn btn-outline btn-sm">View All</a></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr th:each="u : ${recentUsers}">
+                <td><div style="font-weight:500" th:text="${u.firstName + ' ' + (u.lastName ?: '')}">Name</div>
+                    <div class="text-xs text-muted" th:text="${u.email}">email</div></td>
+                <td><span class="badge" th:classappend="${u.role.name() == 'CANDIDATE' ? 'badge-info' : (u.role.name() == 'RECRUITER' ? 'badge-warning' : 'badge-danger')}" th:text="${u.role}">r</span></td>
+                <td class="text-sm text-muted" th:text="${#temporals.format(u.createdAt,'MMM d')}">date</td>
+                <td><span th:class="${u.enabled ? 'badge badge-success' : 'badge badge-danger'}" th:text="${u.enabled ? 'Active' : 'Disabled'}">s</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Job Postings</span><a th:href="@{/admin/jobs}" class="btn btn-outline btn-sm">View All</a></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Title</th><th>Company</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr th:each="j : ${recentJobs}">
+                <td style="font-weight:500" th:text="${j.title}">Title</td>
+                <td th:text="${j.companyName}">Co</td>
+                <td><span class="badge" th:classappend="${j.status.name() == 'ACTIVE' ? 'badge-success' : 'badge-warning'}" th:text="${j.status}">s</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

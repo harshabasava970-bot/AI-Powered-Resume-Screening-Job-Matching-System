@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Recruiter Dashboard')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div class="page-header">
+        <h1 class="page-title">Welcome, <span th:text="${user.firstName}">Recruiter</span>! 👋</h1>
+        <p class="page-subtitle" th:text="${profile?.companyName ?: 'Recruiter Dashboard'}">Dashboard</p>
+      </div>
+      <a th:href="@{/recruiter/jobs/create}" class="btn btn-primary">➕ Post New Job</a>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom:2rem">
+      <div class="stat-card stat-primary">
+        <div class="stat-icon">💼</div>
+        <div class="stat-value" th:text="${totalJobs}">0</div>
+        <div class="stat-label">Total Jobs</div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" th:text="${activeJobs}">0</div>
+        <div class="stat-label">Active Jobs</div>
+      </div>
+      <div class="stat-card stat-info">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value" th:text="${totalMatches}">0</div>
+        <div class="stat-label">Total Candidate Matches</div>
+      </div>
+      <div class="stat-card stat-warning">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" th:text="${avgScore} + '%'">0%</div>
+        <div class="stat-label">Avg Match Score</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 My Job Postings</span>
+          <a th:href="@{/recruiter/jobs}" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div th:if="${#lists.isEmpty(recentJobs)}" class="card-body">
+          <div class="empty-state" style="padding:1.5rem">
+            <div class="empty-state-icon">📝</div>
+            <div class="empty-state-title">No jobs posted yet</div>
+            <a th:href="@{/recruiter/jobs/create}" class="btn btn-primary btn-sm">Post First Job</a>
+          </div>
+        </div>
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(recentJobs)}">
+          <table>
+            <thead><tr><th>Title</th><th>Status</th><th>Posted</th><th></th></tr></thead>
+            <tbody>
+              <tr th:each="job : ${recentJobs}">
+                <td style="font-weight:500" th:text="${job.title}">Title</td>
+                <td><span class="badge" th:classappend="${job.status == 'ACTIVE' ? 'badge-success' : 'badge-warning'}" th:text="${job.status}">s</span></td>
+                <td class="text-sm text-muted" th:text="${#temporals.format(job.postedAt,'MMM d')}">date</td>
+                <td>
+                  <a th:href="@{/recruiter/jobs/{id}/candidates(id=${job.id})}" class="btn btn-outline btn-sm">Candidates</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">👥 Recent Candidate Matches</span></div>
+        <div th:if="${#lists.isEmpty(recentMatches)}" class="card-body">
+          <p class="text-muted text-sm">No candidates have analyzed your jobs yet.</p>
+        </div>
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(recentMatches)}">
+          <table>
+            <thead><tr><th>Candidate</th><th>Job</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr th:each="m : ${recentMatches}">
+                <td class="text-sm" th:text="${m.resume.candidateProfile.user.fullName}">Name</td>
+                <td class="text-sm" th:text="${m.job.title}">Job</td>
+                <td><span th:with="s=${m.matchScore}"
+                          th:class="${s >= 70 ? 'badge badge-success' : (s >= 40 ? 'badge badge-warning' : 'badge badge-danger')}"
+                          th:text="${#numbers.formatDecimal(m.matchScore,1,1)} + '%'">0%</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

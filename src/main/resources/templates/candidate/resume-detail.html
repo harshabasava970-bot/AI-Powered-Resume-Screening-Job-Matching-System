@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Resume Details')}"></th:block></head>
+<body class="page-wrapper">
+<th:block th:replace="~{fragments/layout :: navbar}"></th:block>
+<th:block th:replace="~{fragments/layout :: flashMessages}"></th:block>
+
+<main class="main-content">
+  <div class="container">
+    <div class="page-header-row">
+      <div>
+        <a th:href="@{/candidate/resumes}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← My Resumes</a>
+        <h1 class="page-title" th:text="${resume.originalFileName}">Resume</h1>
+        <p class="page-subtitle">Uploaded: <span th:text="${#temporals.format(resume.uploadedAt,'MMMM d, yyyy HH:mm')}">date</span></p>
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <a th:href="@{/candidate/analyze}" class="btn btn-primary">🎯 Analyze Against a Job</a>
+        <a th:href="@{/candidate/recommendations/{id}(id=${resume.id})}" class="btn btn-outline-primary">🚀 Get Recommendations</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <!-- Extracted Info -->
+      <div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><span class="card-title">👤 Extracted Information</span>
+            <span th:if="${resume.parsed}" class="badge badge-success">✓ Parsed</span>
+            <span th:unless="${resume.parsed}" class="badge badge-warning">⚠ Not Parsed</span>
+          </div>
+          <div class="card-body">
+            <table style="width:100%">
+              <tr><td style="padding:.5rem .25rem;color:var(--gray-500);font-size:.875rem;width:35%">Name</td>
+                  <td style="padding:.5rem .25rem;font-size:.875rem;font-weight:500" th:text="${resume.extractedName}">-</td></tr>
+              <tr><td style="padding:.5rem .25rem;color:var(--gray-500);font-size:.875rem">Email</td>
+                  <td style="padding:.5rem .25rem;font-size:.875rem" th:text="${resume.extractedEmail}">-</td></tr>
+              <tr><td style="padding:.5rem .25rem;color:var(--gray-500);font-size:.875rem">Phone</td>
+                  <td style="padding:.5rem .25rem;font-size:.875rem" th:text="${resume.extractedPhone}">-</td></tr>
+              <tr><td style="padding:.5rem .25rem;color:var(--gray-500);font-size:.875rem">File Type</td>
+                  <td style="padding:.5rem .25rem"><span class="badge badge-gray" th:text="${resume.fileType}">PDF</span></td></tr>
+              <tr><td style="padding:.5rem .25rem;color:var(--gray-500);font-size:.875rem">File Size</td>
+                  <td style="padding:.5rem .25rem;font-size:.875rem" th:text="${resume.fileSize != null ? #numbers.formatDecimal(resume.fileSize/1024.0,1,1) + ' KB' : 'N/A'}">-</td></tr>
+            </table>
+          </div>
+          <div class="card-footer" style="display:flex;gap:.5rem">
+            <form th:action="@{/candidate/resumes/{id}/reparse(id=${resume.id})}" method="post" style="margin:0">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-outline btn-sm">🔄 Re-parse</button>
+            </form>
+            <form th:action="@{/candidate/resumes/{id}/delete(id=${resume.id})}" method="post" style="margin:0">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-danger btn-sm"
+                      data-confirm="Remove this resume? This will not delete existing analyses.">🗑 Remove</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Education -->
+        <div class="card" style="margin-bottom:1.5rem" th:if="${resume.extractedEducation != 'Not detected'}">
+          <div class="card-header"><span class="card-title">🎓 Education</span></div>
+          <div class="card-body"><p style="font-size:.875rem;white-space:pre-wrap" th:text="${resume.extractedEducation}">-</p></div>
+        </div>
+
+        <!-- Experience -->
+        <div class="card" th:if="${resume.extractedExperience != 'Not detected'}">
+          <div class="card-header"><span class="card-title">💼 Experience</span></div>
+          <div class="card-body"><p style="font-size:.875rem;white-space:pre-wrap" th:text="${resume.extractedExperience}">-</p></div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🛠 Detected Skills</span>
+            <span class="badge badge-primary" th:text="${#lists.size(resume.skills)} + ' skills'">0 skills</span>
+          </div>
+          <div class="card-body">
+            <div th:if="${#lists.isEmpty(resume.skills)}" class="empty-state" style="padding:2rem">
+              <div class="empty-state-icon">🔍</div>
+              <div class="empty-state-title">No skills detected</div>
+              <div class="empty-state-text">Try re-parsing or ensure your resume lists skills clearly.</div>
+            </div>
+            <div th:unless="${#lists.isEmpty(resume.skills)}" class="skill-tags">
+              <span th:each="skill : ${resume.skills}" class="skill-tag" th:text="${skill}">Skill</span>
+            </div>
+
+            <div th:if="${resume.extractedProjects != 'Not detected'}" style="margin-top:1.5rem">
+              <div class="section-title">📁 Projects</div>
+              <p style="font-size:.875rem;white-space:pre-wrap" th:text="${resume.extractedProjects}">-</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a th:href="@{/candidate/analyze}" class="btn btn-primary btn-block">🎯 Analyze Against a Job</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: footer}"></th:block>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
