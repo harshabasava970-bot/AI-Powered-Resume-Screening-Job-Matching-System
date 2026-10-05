@@ -176,16 +176,19 @@ public class ResumeServiceImpl implements ResumeService {
             resume.setExtractedExperience(info.get("experience"));
             resume.setExtractedProjects(info.get("projects"));
 
-            // 3. Extract skills
+            // 3. Extract skills — clear existing and add new ones into the SAME collection
+            // (never replace the collection reference — Hibernate orphanRemoval requires same instance)
             List<Skill> skills = skillExtractionService.extractSkills(rawText);
 
-            // Clear old skills and save new ones
             resumeSkillRepository.deleteByResume(resume);
-            List<ResumeSkill> resumeSkills = skills.stream()
+            resumeSkillRepository.flush();
+
+            resume.getResumeSkills().clear();
+
+            List<ResumeSkill> newSkills = skills.stream()
                     .map(skill -> new ResumeSkill(resume, skill))
                     .collect(Collectors.toList());
-            resumeSkillRepository.saveAll(resumeSkills);
-            resume.setResumeSkills(resumeSkills);
+            resume.getResumeSkills().addAll(newSkills);
 
             resume.setParsed(true);
             resumeRepository.save(resume);

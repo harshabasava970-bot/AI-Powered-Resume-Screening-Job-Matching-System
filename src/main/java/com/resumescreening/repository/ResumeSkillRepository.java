@@ -3,8 +3,10 @@ package com.resumescreening.repository;
 import com.resumescreening.entity.Resume;
 import com.resumescreening.entity.ResumeSkill;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,6 +15,9 @@ public interface ResumeSkillRepository extends JpaRepository<ResumeSkill, Long> 
 
     List<ResumeSkill> findByResume(Resume resume);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ResumeSkill rs WHERE rs.resume = :resume")
     void deleteByResume(Resume resume);
 
     @Query("SELECT rs FROM ResumeSkill rs JOIN FETCH rs.skill WHERE rs.resume.id = :resumeId")
